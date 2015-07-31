@@ -46,6 +46,57 @@
             ~@fn-body)))]))
 
 (defmacro genspec
+  "Generate a spec suitable for React.createClass.
+
+  (genspec prop-binding options* specs*)
+
+  prop-binding - A binding form which is available in all direct
+  function definitions
+
+  the following options are available:
+
+  :state - A binding form for the component local state, available in
+  all direct function defintions
+  
+  :this-as - A symbol bound to the React component in all direct
+  function definitions
+
+  A spec consists of either of a symbol value pair:
+
+  Defines a field in the generated spec named symbol and definition.
+
+  See https://facebook.github.io/react/docs/component-specs.html for
+  available properties.
+
+  The following properties are augmented:
+
+  mixins - If a vector is passed, the mireact default mixin is
+  prepended and it is cast to a js-array.  The default mixin can be
+  disabled by associating :no-default on the vectors metadata map.
+  NOTE: If no mixins are passed, the mireact default mixin is used as
+  well.
+
+  Alternatively, a single literal function definition can be passed as
+  follows
+
+  (fn modifiers* name arg positional-params body)
+  
+  These function definitions are transformed so that state and props
+  bindings are available.
+
+  The following fn names are augmented:
+
+  componentWillReceiveProps
+  shouldComponentUpdate
+  componentWillUpdate
+  componentDidUpdate
+
+  For these, the props and state arguments passed by react are rebound
+  to their mireact properties.  You can disable this behavior by
+  specifying the symbol \"raw\" as a modifier.
+
+  Note that this behavior can be avoided completely by specifiyng the
+  function as a symbol definition pair."
   [prop-binding & spec]
   (let [[opts spec] (extract-opts spec)
         spec (cond-> spec
@@ -77,6 +128,13 @@
             result))))) 
 
 (defmacro defreact
+  "Define a variadic factory function according to spec. varargs
+  become the components props.
+
+  The component is available under the same name as the component.
+  This can be overriden via the :this-as option in spec.
+
+  See also: genspec."
   [name prop-binding & spec]
   (assert (vector? prop-binding))
   `(def ~name
