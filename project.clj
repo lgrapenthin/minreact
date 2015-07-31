@@ -18,4 +18,4 @@
      [{:id "dev"
        :source-paths ["src" "dev"]
        :figwheel true
-       :compiler {:main dev}}]}}})
+       :compiler {:main dev.core}}]}}})

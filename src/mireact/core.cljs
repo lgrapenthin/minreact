@@ -1,6 +1,7 @@
 (ns mireact.core
   (:require [cljsjs.react])
-  (:require-macros [mireact.core :refer [genspec]]))
+  (:require-macros [mireact.core :refer [genspec]])
+  (:refer-clojure :exclude [set!]))
 
 (def ^:private state-key "__mireact_state")
 
@@ -30,7 +31,7 @@
   [c]
   (mireact-props (.-props c)))
 
-(defn cswap!
+(defn transact!
   "Sets the components state to f applied to its current state and
   args."
   [c f & args]
@@ -38,10 +39,22 @@
                  (js-obj state-key
                          (apply f (mireact-state react-state) args)))))
 
-(defn creset!
-  "Set the current components state to value"
-  [c newval]
-  (cswap! c (constantly newval)))
+;; NOTE om korks: Grepping large om codebases shows that in 99% of the
+;; cases om/set-state! and om/update-state! are used with a single key
+;; --
+(defn update!
+  "Sets the components state at k to f applied to its current state
+  and args. See also: transact!"
+  [c k f & args]
+  (apply transact! c update k f args))
+
+(defn set!
+  "Asynchronously set the components state to newval, at k if
+  provided."
+  ([c newval]
+   (.setState c (js-obj state-key newval)))
+  ([c k newval]
+   (transact! c assoc k newval)))
 
 (def default-mixin
   "Mireact default mixin."
