@@ -65,7 +65,7 @@
      (js-obj props-key nil))
    (fn getInitialState []
      (js-obj state-key nil))
-   (fn raw shouldComponentUpdate [next-props next-state]
+   (fn shouldComponentUpdate [next-props next-state]
      (or (not= next-props props)
          (not= next-state state)))))
  
