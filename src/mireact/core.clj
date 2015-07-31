@@ -47,7 +47,10 @@
 
 (defmacro genspec
   [prop-binding & spec]
-  (let [[opts spec] (extract-opts spec)]
+  (let [[opts spec] (extract-opts spec)
+        spec (cond-> spec
+               (not-any? #{'mixins} spec)
+               (concat '[mixins []]))]
     `(cljs.core/js-obj
       ~@(loop [[f s :as elems] spec
                result []]
@@ -76,12 +79,8 @@
 (defmacro defreact
   [name prop-binding & spec]
   (assert (vector? prop-binding))
-  (if (some #{'mixins} spec)
-    `(def ~name
-       (let [c# (js/React.createClass
-                 (genspec ~prop-binding :this-as ~name ~@spec))]
-         (fn [& props#]
-           (js/React.createElement c# (cljs.core/js-obj props-key props#)))))
-    `(defreact ~name
-       ~prop-binding
-       ~@(concat spec ['mixins []]))))
+  `(def ~name
+     (let [c# (js/React.createClass
+               (genspec ~prop-binding :this-as ~name ~@spec))]
+       (fn [& props#]
+         (js/React.createElement c# (cljs.core/js-obj props-key props#))))))

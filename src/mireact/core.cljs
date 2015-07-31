@@ -61,6 +61,7 @@
   (genspec
    props
    :state state
+   mixins ^:no-default []
    (fn getDefaultProps []
      (js-obj props-key nil))
    (fn getInitialState []
@@ -68,3 +69,4 @@
    (fn raw shouldComponentUpdate [next-props next-state]
      (or (not= next-props props)
          (not= next-state state)))))
+ 
