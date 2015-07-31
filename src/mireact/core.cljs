@@ -49,8 +49,7 @@
   (apply transact! c update k f args))
 
 (defn set!
-  "Asynchronously set the components state to newval, at k if
-  provided."
+  "Set the components state to newval, at k if provided."
   ([c newval]
    (.setState c (js-obj state-key newval)))
   ([c k newval]
