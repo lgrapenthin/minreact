@@ -32,7 +32,7 @@
   (mireact-props (.-props c)))
 
 (defn transact!
-  "Sets the components state to f applied to its current state and
+  "Set the components state to f applied to its current state and
   args."
   [c f & args]
   (.setState c (fn [react-state _]
@@ -43,8 +43,8 @@
 ;; cases om/set-state! and om/update-state! are used with a single key
 ;; --
 (defn update!
-  "Sets the components state at k to f applied to its current state
-  and args. See also: transact!"
+  "Set the components state at k to f applied to its current state and
+  args. See also: transact!"
   [c k f & args]
   (apply transact! c update k f args))
 
