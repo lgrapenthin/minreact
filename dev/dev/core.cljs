@@ -1,5 +1,5 @@
 (ns dev.core
-  (:require [mireact.core :as mr]))
+  (:require [mireact.core :as mr :refer-macros [defreact]]))
 
 (defn div [& content]
   (apply js/React.createElement "div" nil
@@ -9,28 +9,28 @@
   (apply js/React.createElement "button" #js{:onClick on-click}
          title))
 
-(mr/defreact counter-ui [txt & children :as props]
+(defreact counter-ui [txt & children]
   :state {:keys [count]}
   (fn componentWillMount []
     (mr/set! counter-ui {:count 42}))
   (fn render []
     (div
-      (apply div
-             (str "Count: " count)
-             children)
       (div
         (button "Count more!"
           (fn [_]
-            (mr/update! counter-ui :count (fnil inc 0))))))))
+            (mr/update! counter-ui :count (fnil inc 0)))))
+      (apply div
+             (str "Count: " count)
+             children))))
 
-(mr/defreact app []
+(defreact app []
   :state {:keys [n-divs]}
   (fn render []
     (div
       (apply counter-ui "Hi!"
              (for [i (range n-divs)]
                (div i)))
-      (pr-str n-divs)
+      (div (str "n-divs: " (pr-str n-divs)))
       (button "click me too"
         (fn [_]
           (mr/set! app :n-divs 5))))))

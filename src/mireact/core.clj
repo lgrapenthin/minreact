@@ -46,7 +46,7 @@
             ~@fn-body)))]))
 
 (defmacro genspec
-  [binding & spec]
+  [prop-binding & spec]
   (let [[opts spec] (extract-opts spec)]
     `(cljs.core/js-obj
       ~@(loop [[f s :as elems] spec
@@ -67,7 +67,7 @@
                                      s)))
                   (list? f)
                   (recur (next elems)
-                         (into result (wrap-fn binding opts f)))
+                         (into result (wrap-fn prop-binding opts f)))
                   :else
                   (throw (IllegalArgumentException.
                           (str "Invalid spec elem: " (pr-str f)))))
@@ -75,6 +75,7 @@
 
 (defmacro defreact
   [name prop-binding & spec]
+  (assert (vector? prop-binding))
   (if (some #{'mixins} spec)
     `(def ~name
        (let [c# (js/React.createClass
