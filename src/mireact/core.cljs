@@ -59,11 +59,12 @@
 (def default-mixin
   "Mireact default mixin."
   (genspec
-   [this props state]
+   props
+   :state state
    (fn getDefaultProps []
      (js-obj props-key nil))
    (fn getInitialState []
      (js-obj state-key nil))
-   (fn shouldComponentUpdate [next-props next-state]
+   (fn raw shouldComponentUpdate [next-props next-state]
      (or (not= next-props props)
          (not= next-state state)))))

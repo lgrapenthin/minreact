@@ -9,27 +9,31 @@
   (apply js/React.createElement "button" #js{:onClick on-click}
          title))
 
-(mr/defreact counter [this props state]
-  mixins ^:no-default []
+(mr/defreact counter-ui [txt & children :as props]
+  :state {:keys [count]}
   (fn componentWillMount []
-    (mr/set! this {:counter 400}))
-  (fn raw componentWillReceiveProps [next-props]
-    (js/console.log "counter got props" next-props))
+    (mr/set! counter-ui {:count 42}))
   (fn render []
     (div
-      (div (str "Props: " (pr-str props)))
-      (div (str "State: " (pr-str state)))
-      (div (str "Children: " (.. this -props -children)))
+      (apply div
+             (str "Count: " count)
+             children)
       (div
-        (button "Click me" (fn [_]
-                             (mr/update! this :counter (fnil inc 0))))))))
+        (button "Count more!"
+          (fn [_]
+            (mr/update! counter-ui :count (fnil inc 0))))))))
 
-(mr/defreact app [this _ {:keys [passed-props]}]
+(mr/defreact app []
+  :state {:keys [n-divs]}
   (fn render []
     (div
-      (counter passed-props)
-      (button "click me too" (fn [_]
-                               (mr/set! this :passed-props 3000))))))
+      (apply counter-ui "Hi!"
+             (for [i (range n-divs)]
+               (div i)))
+      (pr-str n-divs)
+      (button "click me too"
+        (fn [_]
+          (mr/set! app :n-divs 5))))))
 
 (defn main []
   (js/React.render (app 32)
