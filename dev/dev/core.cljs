@@ -1,5 +1,5 @@
 (ns dev.core
-  (:require [mireact.core :as mr :refer-macros [defreact]]))
+  (:require [minreact.core :as mr :refer-macros [defreact]]))
 
 (defn div [& content]
   (apply js/React.createElement "div" nil
