@@ -55,6 +55,28 @@
   ([c k newval]
    (transact! c assoc k newval)))
 
+(def reserved-ks [:key :ref :dangerouslySetInnerHTML])
+
+(defn- extract-reserved [props]
+  (cond (map? props)
+        [(let [obj (js-obj)]
+           (doseq [k reserved-ks]
+             (when-let [v (get props k)]
+               (aset obj (name k) v)))
+           obj)
+         (apply dissoc props reserved-ks)]
+        
+        (object? props)
+        (let [obj (js-obj)]
+          (doseq [k (map name reserved-ks)]
+            (when-let [v (aget props k)]
+              (aset obj k v)
+              (js-delete props k)))
+          [obj props])
+
+        :else
+        [(js-obj) props]))
+
 (def default-mixin
   "Minreact default mixin."
   (genspec

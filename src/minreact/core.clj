@@ -129,16 +129,29 @@
 
 (defmacro defreact
   "Define a variadic factory function according to spec. varargs
-  become the components props.
+  become the components minreact props.
 
-  The component is available under the same name as the component.
-  This can be overriden via the :this-as option in spec.
+  Within methods, the components this object is bound to name.  This
+  can be overriden by using the :this-as option in spec.
 
-  See also: genspec."
+  See also: genspec.
+
+  React attributes:
+  
+  If the first arg passed is a map or JS object, the following keys
+  are associated directly in the React props and will not be made
+  available in the minreact props:
+
+  :key, :ref, :dangerouslySetInnerHTML
+
+  See also:
+  https://facebook.github.io/react/docs/special-non-dom-attributes.html"
   [name prop-binding & spec]
   (assert (vector? prop-binding))
   `(def ~name
      (let [c# (js/React.createClass
                (genspec ~prop-binding :this-as ~name ~@spec))]
-       (fn [& props#]
-         (js/React.createElement c# (cljs.core/js-obj props-key props#))))))
+       (fn [prop# & props#]
+         (let [[obj# prop#] (extract-reserved prop#)]
+           (aset obj# props-key (cons prop# props#))
+           (js/React.createElement c# obj#))))))
