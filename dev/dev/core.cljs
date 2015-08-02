@@ -1,5 +1,5 @@
 (ns dev.core
-  (:require [minreact.core :as mr :refer-macros [defreact]]))
+  (:require [minreact.core :as m :refer-macros [defreact]]))
 
 (defn div [& content]
   (apply js/React.createElement "div" nil
@@ -17,13 +17,13 @@
 (defreact counter-ui [txt & children]
   :state {:keys [count]}
   (fn componentWillMount []
-    (mr/set! counter-ui {:count 42}))
+    (m/set! counter-ui {:count 42}))
   (fn render []
     (div
       (div
         (button "Count more!"
           (fn [_]
-            (mr/update! counter-ui :count (fnil inc 0)))))
+            (m/update! counter-ui :count (fnil inc 0)))))
       (apply div
              (str "Count: " count)
              children))))
@@ -41,7 +41,7 @@
       (div (str "n-items: " (pr-str n-items)))
       (button "click me too"
         (fn [_]
-          (mr/set! app :n-items 5))))))
+          (m/set! app :n-items 5))))))
 
 (defn main []
   (js/React.render (app 32)
