@@ -6,10 +6,10 @@
   :dependencies [[org.clojure/clojure "1.7.0"]]
   :profiles
   {:dev
-   {:dependencies [[org.clojure/clojurescript "0.0-3308"]
+   {:dependencies [[org.clojure/clojurescript "1.7.28"]
                    [cljsjs/react "0.13.3-0"]]
     :plugins [[lein-cljsbuild "1.0.6"]
-              [lein-figwheel "0.3.5"]]
+              [lein-figwheel "0.3.7"]]
     
     :figwheel {:nrepl-port 7888}
     
