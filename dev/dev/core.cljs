@@ -16,14 +16,15 @@
 
 (defreact counter-ui [txt & children]
   :state {:keys [count]}
+  :this-as this
   (fn componentWillMount []
-    (m/set! counter-ui {:count 42}))
+    (m/set! this {:count 42}))
   (fn render []
     (div
       (div
         (button "Count more!"
           (fn [_]
-            (m/update! counter-ui :count (fnil inc 0)))))
+            (m/update! this :count (fnil inc 0)))))
       (apply div
              (str "Count: " count)
              children))))

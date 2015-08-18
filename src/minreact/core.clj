@@ -4,12 +4,11 @@
   "Return [opts-map spec]"
   [spec]
   (let [opts
-        (into {}
-              (comp
-               (partition-all 2)
-               (take-while (comp keyword? first)))
-              spec)]
-    [opts (drop (* 2 (count opts)) spec)]))
+        (->> spec
+             (partition-all 2)
+             (take-while (comp keyword? first))
+             (map vec))]
+    [(into {} opts) (drop (* 2 (count opts)) spec)]))
 
 (defn- wrap-fn
   [prop-binding {this-sym :this-as
