@@ -17,9 +17,9 @@
                  :or {this-sym (gensym "this")}} fn-form]
   (let [raw? (= 'raw (second fn-form))
         [fn-name fn-bindings & fn-body] (nthrest fn-form (if raw? 2 1))
-        fn-params (mapv (fn [param]
-                          (gensym (name param)))
-                        fn-bindings)]
+        fn-params (mapv (fn [i]
+                          (gensym (str fn-name "_arg_" i)))
+                        (range (count fn-bindings)))]
     [(name fn-name)
      `(fn ~fn-name
         ~fn-params
