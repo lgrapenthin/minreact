@@ -149,7 +149,7 @@
   (assert (vector? prop-binding))
   `(def ~name
      (let [c# (js/React.createClass
-               (genspec ~prop-binding :this-as ~name ~@spec))]
+               (genspec ~prop-binding :this-as ~'this ~@spec))]
        (fn [prop# & props#]
          (let [[obj# prop#] (extract-reserved prop#)]
            (aset obj# props-key (cons prop# props#))

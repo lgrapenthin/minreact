@@ -11,15 +11,15 @@
 
 (defreact counter-ui [txt & children]
   :state {:keys [count]}
-  :this-as this
+  :this-as component
   (fn componentWillMount []
-    (m/set! this {:count 42}))
+    (m/set! component {:count 42}))
   (fn render []
     (html
       [:div
        [:div
         [:button {:on-click (fn [_]
-                              (m/update! this :count (fnil inc 0)))}
+                              (m/update! component :count (fnil inc 0)))}
          "Count more!"]]
        [:div
         (str "Count: " count)
@@ -32,12 +32,12 @@
       [:div (str "Hello, " your-name "!"
                  " I know you since " seconds-passed " seconds.")]))
   (fn componentWillMount []
-    (m/set! hello-ui
+    (m/set! this
             {:seconds-passed 0
              :timer
              (doto (Timer. 1000)
                (.listen Timer.TICK
-                        #(m/update! hello-ui :seconds-passed inc)))}))
+                        #(m/update! this :seconds-passed inc)))}))
   (fn componentDidMount []
     (.start timer))
   (fn componentWillUnmount []
@@ -56,7 +56,7 @@
                           :key i})))
        [:div (str "n-items: " (pr-str n-items))]
        [:button {:on-click (fn [_]
-                             (m/set! app :n-items 5))}
+                             (m/set! this :n-items 5))}
         "click me too"]
        [:div (hello-ui "Beate")]])))
 
