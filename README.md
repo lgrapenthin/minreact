@@ -31,12 +31,12 @@ This is a simple "Hello You" with a timer in minreact and sablono
       [:div (str "Hello, " your-name "!"
                  " I know you since " seconds-passed " seconds.")]))
   (fn componentWillMount []
-    (m/set! hello-ui
+    (m/set! this
             {:seconds-passed 0
              :timer
              (doto (Timer. 1000)
                (.listen Timer.TICK
-                        #(m/update! hello-ui :seconds-passed inc)))}))
+                        #(m/update! this :seconds-passed inc)))}))
   (fn componentDidMount []
     (.start timer))
   (fn componentWillUnmount []
