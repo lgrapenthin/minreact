@@ -130,16 +130,17 @@
   "Define a variadic factory function according to spec. varargs
   become the components minreact props.
 
-  Within methods, the components this object is bound to name.  This
-  can be overriden by using the :this-as option in spec.
+  See the genspec docstring for spec.
 
-  See also: genspec.
+  Within methods, the components this object is bound to `this`.  It
+  can be overriden using the :this-as option in spec.
+
 
   React attributes:
   
-  If the first arg passed is a map or JS object, the following keys
-  are associated directly in the React props and will not be made
-  available in the minreact props:
+  If the first arg passed to the factory is a map or JS object the
+  following keys are associated directly in the React props and will
+  not be made available in the minreact props:
 
   :key, :ref, :dangerouslySetInnerHTML
 
