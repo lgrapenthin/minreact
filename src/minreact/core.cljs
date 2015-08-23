@@ -1,5 +1,6 @@
 (ns minreact.core
-  (:require [cljsjs.react])
+  (:require [cljsjs.react]
+            [goog.object :as obj])
   (:require-macros [minreact.core :refer [genspec]])
   (:refer-clojure :exclude [set!]))
 
@@ -12,14 +13,14 @@
   if not present"
   ([s] (minreact-state s nil))
   ([s not-found]
-   (or (some-> s (aget state-key)) not-found)))
+   (or (some-> s (obj/get state-key)) not-found)))
 
 (defn minreact-props
   "Return the minreact props of pure React component props p, not-found
   if not present"
   ([p] (minreact-props p nil))
   ([p not-found]
-   (or (some-> p (aget props-key)) not-found)))
+   (or (some-> p (obj/get props-key)) not-found)))
 
 (defn state
   "Return the components current state"
@@ -69,7 +70,7 @@
         (object? props)
         (let [obj (js-obj)]
           (doseq [k (map name reserved-ks)]
-            (when-let [v (aget props k)]
+            (when-let [v (obj/get props k)]
               (aset obj k v)
               (js-delete props k)))
           [obj props])
