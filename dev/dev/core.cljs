@@ -1,5 +1,5 @@
 (ns dev.core
-  (:require [minreact.core :as m :refer-macros [defreact]]
+  (:require [minreact.core :as m :refer-macros [defreact with-irefs]]
             [sablono.core :refer-macros [html]])
   (:import [goog Timer]))
 
@@ -43,6 +43,8 @@
   (fn componentWillUnmount []
     (.stop timer)))
 
+(def an-atom (atom 42))
+
 (defreact app []
   :state {:keys [n-items]}
   (fn getInitialState []
@@ -60,9 +62,12 @@
        [:button {:on-click (fn [_]
                              (m/set! this :n-items 5))}
         "click me too"]
-       [:div (hello-ui "Beate")]])))
-
-
+       [:div (hello-ui "Beate")]
+       (with-irefs [v an-atom]
+         (html [:div "Atom: " v]))
+       [:button {:on-click (fn [_]
+                             (swap! an-atom inc))}
+        "Increase atom"]])))
 
 (defn main []
   (js/React.render (app)

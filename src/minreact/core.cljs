@@ -1,7 +1,8 @@
 (ns minreact.core
   (:require [cljsjs.react]
-            [goog.object :as obj])
-  (:require-macros [minreact.core :refer [genspec]])
+            [goog.object :as obj]
+            [clojure.set :as set])
+  (:require-macros [minreact.core :refer [genspec defreact]])
   (:refer-clojure :exclude [set!]))
 
 (def ^:private state-key "__minreact_state")
@@ -90,4 +91,33 @@
    (fn shouldComponentUpdate [next-props next-state]
      (or (not= next-props props)
          (not= next-state state)))))
+
+(defn- install-watch [c iref]
+  (minreact.core/set! c iref @iref)
+  (add-watch iref ::watch
+             (fn [_ r _ n]
+               (minreact.core/set! c r n))))
+
+(defn- uninstall-watch [c iref]
+  (remove-watch iref ::watch)
+  (transact! c iref dissoc iref))
  
+(defreact watch-irefs
+  "React component that watches changes of irefs and invokes
+  render-child with their values."
+  [render-child & irefs]
+  :state kvs
+  (fn getInitialState [] {})
+  (fn componentDidMount []
+    (run! (partial install-watch this) irefs))
+  (fn componentWillReceiveProps [[_ & next-irefs]]
+    (let [irefs (set irefs)
+          next-irefs (set next-irefs)
+          removed (set/difference irefs next-irefs)
+          added (set/difference next-irefs irefs)]
+      (run! (partial install-watch this) added)
+      (run! (partial uninstall-watch this) removed)))
+  (fn render []
+    (->> irefs
+         (map kvs)
+         (apply render-child))))

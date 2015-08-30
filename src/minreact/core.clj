@@ -150,14 +150,34 @@
   See also:
   https://facebook.github.io/react/docs/special-non-dom-attributes.html"
   [name prop-binding & spec]
-  (assert (vector? prop-binding))
-  `(def ~name
-     (let [c# (js/React.createClass
-               (genspec ~prop-binding :this-as ~'this ~@spec))]
-       (fn
-         ([]
-          (js/React.createElement c# (cljs.core/js-obj)))
-         ([prop# & props#]
-          (let [[obj# prop#] (extract-reserved prop#)]
-            (js/goog.object.add obj# props-key (cons prop# props#))
-            (js/React.createElement c# obj#)))))))
+  (let [[docstr prop-binding spec]
+        (if (string? prop-binding)
+          [prop-binding (first spec) (rest spec)]
+          [nil prop-binding spec])]
+    (assert (vector? prop-binding))
+    `(def ~name
+       ~@(if docstr
+           [docstr])
+       (let [c# (js/React.createClass
+                 (genspec ~prop-binding :this-as ~'this ~@spec))]
+         (fn
+           ([]
+            (js/React.createElement c# (cljs.core/js-obj)))
+           ([prop# & props#]
+            (let [[obj# prop#] (extract-reserved prop#)]
+              (js/goog.object.add obj# props-key (cons prop# props#))
+              (js/React.createElement c# obj#))))))))
+
+(defmacro with-irefs
+  "Like let, but expects irefs as init-exprs and returns a react
+  component.  See wrap-watch."
+  [bindings & body]
+  {:pre [(even? (count bindings))]}
+  `(watch-irefs
+    (fn ~(into []
+               (take-nth 2)
+               bindings)
+      ~@body)
+    ~@(->> bindings
+           (drop 1)
+           (take-nth 2))))
