@@ -22,27 +22,42 @@
     [(name fn-name)
      `(fn ~fn-name
         ~fn-params
-        (cljs.core/this-as ~this-sym
-          (let [~prop-binding (props ~this-sym)
-                ~@(if state-binding
-                    [state-binding (list `state this-sym)])
-                ~@(if (and (not raw?)
-                           (contains? '#{componentWillReceiveProps
-                                         shouldComponentUpdate
-                                         componentWillUpdate
-                                         componentDidUpdate}
-                                      fn-name))
-                    (mapcat (fn [binding param getter]
-                              [binding (list getter param)])
-                            fn-bindings
-                            fn-params
-                            [`minreact-props
-                             `minreact-state])
-                    (mapcat (fn [binding param]
-                              [binding param])
-                            fn-bindings
-                            fn-params))]
-            ~@fn-body)))]))
+        ~(let [form
+               `(cljs.core/this-as ~this-sym
+                  (let [~prop-binding (props ~this-sym)
+                        ~@(if state-binding
+                            [state-binding (list `state this-sym)])
+                        ~@(if (and (not raw?)
+                                   (contains? '#{componentWillReceiveProps
+                                                 shouldComponentUpdate
+                                                 componentWillUpdate
+                                                 componentDidUpdate}
+                                              fn-name))
+                            (mapcat (fn [binding param getter]
+                                      [binding (list getter param)])
+                                    fn-bindings
+                                    fn-params
+                                    [`minreact-props
+                                     `minreact-state])
+                            (mapcat (fn [binding param]
+                                      [binding param])
+                                    fn-bindings
+                                    fn-params))]
+                    ~@fn-body))]
+           (if raw?
+             form
+             (case fn-name
+               getInitialState
+               `(cljs.core/js-obj state-key ~form)
+               ;; Questionable:
+               
+               ;; getDefaultProps
+               ;; `(cljs.core/js-obj props-key ~form)
+
+               ;; I have decided against this for now, because we
+               ;; can't get Reacts behavior which does some kind of
+               ;; deep merge on ClojureScript datastructures.
+               form))))]))
 
 (defmacro genspec
   "Generate a spec suitable for React.createClass.
@@ -60,28 +75,13 @@
   :this-as - A symbol bound to the React component in all direct
   function definitions
 
-  A spec consists of either of a symbol value pair:
-
-  Defines a field in the generated spec named symbol and definition.
-
-  See https://facebook.github.io/react/docs/component-specs.html for
-  available properties.
-
-  The following properties are augmented:
-
-  mixins - If a vector is passed, the minreact default mixin is
-  prepended and it is cast to a js-array.  The default mixin can be
-  disabled by associating :no-default on the vectors metadata map.
-  NOTE: If no mixins are passed, the minreact default mixin is used as
-  well.
-
-  Alternatively, a single literal function definition can be passed as
-  follows
+  spec - Either a symbol value pair, or a single literal function
+  definition:
 
   (fn modifiers* name arg positional-params body)
   
   These function definitions are transformed so that state and props
-  bindings are available.
+  bindings are available locally.
 
   The following fn names are augmented:
 
@@ -89,42 +89,45 @@
   shouldComponentUpdate
   componentWillUpdate
   componentDidUpdate
+  getInitialState
 
-  For these, the props and state arguments passed by react are rebound
-  to their minreact properties.  You can disable this behavior by
-  specifying the symbol \"raw\" as a modifier.
+  For these, the props and state arguments are rebound to minreact
+  props and state.  The return value of getInitialState is embedded
+  into a js object for React state.
 
-  Note that this behavior can be avoided completely by specifiyng the
-  function as a symbol definition pair."
+  Augmentation can be disabled with the modifier \"raw\".
+
+  mixins - If a vector is passed it is cast to a js-array.
+
+  See https://facebook.github.io/react/docs/component-specs.html for
+  available properties."
   [prop-binding & spec]
   (let [[opts spec] (extract-opts spec)
-        spec (cond-> spec
-               (not-any? #{'mixins} spec)
-               (concat '[mixins []]))]
-    `(cljs.core/js-obj
-      ~@(loop [[f s :as elems] spec
-               result []]
-          (if f
-            (cond (symbol? f)
-                  (recur (nthnext elems 2)
-                         (conj result
-                               (name f)
-                               (cond (= 'mixins f)
-                                     `(let [s# ~s]
-                                        (if (vector? s#)
-                                          (apply cljs.core/array
-                                                 (cond->> s#
-                                                   (not (:no-default (meta s#)))
-                                                   (cons default-mixin)))))
-                                     :else
-                                     s)))
-                  (list? f)
-                  (recur (next elems)
-                         (into result (wrap-fn prop-binding opts f)))
-                  :else
-                  (throw (IllegalArgumentException.
-                          (str "Invalid spec elem: " (pr-str f)))))
-            result))))) 
+        compiled-obj
+        `(cljs.core/js-obj
+          ~@(loop [[f s :as elems] spec
+                   result []]
+              (if f
+                (cond (symbol? f)
+                      (recur (nthnext elems 2)
+                             (conj result
+                                   (name f)
+                                   (cond (= 'mixins f)
+                                         `(let [s# ~s]
+                                            (if (vector? s#)
+                                              (apply cljs.core/array s#)))
+                                         :else
+                                         s)))
+                      (list? f)
+                      (recur (next elems)
+                             (into result (wrap-fn prop-binding opts f)))
+                      :else
+                      (throw (IllegalArgumentException.
+                              (str "Invalid spec elem: " (pr-str f)))))
+                result)))]
+    `(-> default-methods
+         (js/goog.object.clone)
+         (doto (js/goog.object.extend ~compiled-obj))))) 
 
 (defmacro defreact
   "Define a variadic factory function according to spec. varargs
@@ -151,7 +154,10 @@
   `(def ~name
      (let [c# (js/React.createClass
                (genspec ~prop-binding :this-as ~'this ~@spec))]
-       (fn [prop# & props#]
-         (let [[obj# prop#] (extract-reserved prop#)]
-           (aset obj# props-key (cons prop# props#))
-           (js/React.createElement c# obj#))))))
+       (fn
+         ([]
+          (js/React.createElement c# (cljs.core/js-obj)))
+         ([prop# & props#]
+          (let [[obj# prop#] (extract-reserved prop#)]
+            (js/goog.object.add obj# props-key (cons prop# props#))
+            (js/React.createElement c# obj#)))))))

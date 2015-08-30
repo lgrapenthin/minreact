@@ -45,6 +45,8 @@
 
 (defreact app []
   :state {:keys [n-items]}
+  (fn getInitialState []
+    {:n-items  0})
   (fn render []
     (html
       [:div
@@ -63,7 +65,7 @@
 
 
 (defn main []
-  (js/React.render (app 32)
+  (js/React.render (app)
                    (js/document.getElementById "app")))
 
 (main)

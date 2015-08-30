@@ -78,16 +78,15 @@
         :else
         [(js-obj) props]))
 
-(def default-mixin
-  "Minreact default mixin."
+(def default-methods
+  "Minreact default methods"
   (genspec
    props
    :state state
-   mixins ^:no-default []
    (fn getDefaultProps []
      (js-obj props-key nil))
    (fn getInitialState []
-     (js-obj state-key nil))
+     nil)
    (fn shouldComponentUpdate [next-props next-state]
      (or (not= next-props props)
          (not= next-state state)))))
