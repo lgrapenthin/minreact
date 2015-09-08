@@ -33,7 +33,7 @@
   [c]
   (minreact-props (.-props c)))
 
-(defn transact!
+(defn transact-state!
   "Set the components state to f applied to its current state and
   args."
   [c f & args]
@@ -44,13 +44,13 @@
 ;; NOTE om korks: Grepping large om codebases shows that in 99% of the
 ;; cases om/set-state! and om/update-state! are used with a single key
 ;; --
-(defn update!
+(defn update-state!
   "Set the components state at k to f applied to its current state and
   args. See also: transact!"
   [c k f & args]
   (apply transact! c update k f args))
 
-(defn set!
+(defn set-state!
   "Set the components state to newval, at k if provided."
   ([c newval]
    (.setState c (js-obj state-key newval)))
@@ -93,10 +93,10 @@
          (not= next-state state)))))
 
 (defn- install-watch [c iref]
-  (minreact.core/set! c iref @iref)
+  (set-state! c iref @iref)
   (add-watch iref ::watch
              (fn [_ r _ n]
-               (minreact.core/set! c r n))))
+               (set-state! c r n))))
 
 (defn- uninstall-watch [c iref]
   (remove-watch iref ::watch)

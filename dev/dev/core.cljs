@@ -13,13 +13,13 @@
   :state {:keys [count]}
   :this-as component
   (fn componentWillMount []
-    (m/set! component {:count 42}))
+    (m/set-state! component {:count 42}))
   (fn render []
     (html
       [:div
        [:div
         [:button {:on-click (fn [_]
-                              (m/update! component :count (fnil inc 0)))}
+                              (m/update-state! component :count (fnil inc 0)))}
          "Count more!"]]
        [:div
         (str "Count: " count)
@@ -32,12 +32,12 @@
       [:div (str "Hello, " your-name "!"
                  " I know you since " seconds-passed " seconds.")]))
   (fn componentWillMount []
-    (m/set! this
-            {:seconds-passed 0
-             :timer
-             (doto (Timer. 1000)
-               (.listen Timer.TICK
-                        #(m/update! this :seconds-passed inc)))}))
+    (m/set-state! this
+                  {:seconds-passed 0
+                   :timer
+                   (doto (Timer. 1000)
+                     (.listen Timer.TICK
+                              #(m/update-state! this :seconds-passed inc)))}))
   (fn componentDidMount []
     (.start timer))
   (fn componentWillUnmount []
@@ -60,7 +60,7 @@
                           :key i})))
        [:div (str "n-items: " (pr-str n-items))]
        [:button {:on-click (fn [_]
-                             (m/set! this :n-items 5))}
+                             (m/set-state! this :n-items 5))}
         "click me too"]
        [:div (hello-ui "Beate")]
        (with-irefs [v an-atom]
