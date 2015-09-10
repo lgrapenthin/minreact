@@ -79,7 +79,7 @@
         :else
         [(js-obj) props]))
 
-(def default-methods
+(def ^:private default-methods
   "Minreact default methods"
   (genspec
    props
