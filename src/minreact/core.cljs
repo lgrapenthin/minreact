@@ -46,16 +46,16 @@
 ;; --
 (defn update-state!
   "Set the components state at k to f applied to its current state and
-  args. See also: transact!"
+  args. See also: transact-state!"
   [c k f & args]
-  (apply transact! c update k f args))
+  (apply transact-state! c update k f args))
 
 (defn set-state!
   "Set the components state to newval, at k if provided."
   ([c newval]
    (.setState c (js-obj state-key newval)))
   ([c k newval]
-   (transact! c assoc k newval)))
+   (transact-state! c assoc k newval)))
 
 (def reserved-ks [:key :ref :dangerouslySetInnerHTML])
 
@@ -92,6 +92,13 @@
      (or (not= next-props props)
          (not= next-state state)))))
 
+;; TODO: Fix: Can't use the same watch key if iref ends up bound in
+;; multiple components
+
+;; TODO: One should be allowed to specifiy a getter that is watched
+;; explicitly as an optimization.  In the normal usecase this would be
+;; a keyword.
+
 (defn- install-watch [c iref]
   (set-state! c iref @iref)
   (add-watch iref ::watch
@@ -100,7 +107,7 @@
 
 (defn- uninstall-watch [c iref]
   (remove-watch iref ::watch)
-  (transact! c iref dissoc iref))
+  (transact-state! c iref dissoc iref))
  
 (defreact watch-irefs
   "React component that watches changes of irefs and invokes
