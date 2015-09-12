@@ -92,22 +92,26 @@
      (or (not= next-props props)
          (not= next-state state)))))
 
-;; TODO: Fix: Can't use the same watch key if iref ends up bound in
-;; multiple components
-
 ;; TODO: One should be allowed to specifiy a getter that is watched
 ;; explicitly as an optimization.  In the normal usecase this would be
 ;; a keyword.
 
 (defn- install-watch [c iref]
-  (set-state! c iref @iref)
-  (add-watch iref ::watch
-             (fn [_ r _ n]
-               (set-state! c r n))))
+  (let [k (gensym "minreact-watch__")]
+    (transact-state! c (fn [s]
+                         (-> s
+                             (update-in [:watches iref] k)
+                             (assoc iref @iref))))
+    (add-watch iref k
+               (fn [_ r _ n]
+                 (set-state! c r n)))))
 
 (defn- uninstall-watch [c iref]
-  (remove-watch iref ::watch)
-  (transact-state! c iref dissoc iref))
+  (remove-watch iref (get-in (state c) [:watches iref]))
+  (transact-state! c (fn [s]
+                       (-> s
+                           (dissoc iref)
+                           (update :watches dissoc iref)))))
  
 (defreact watch-irefs
   "React component that watches changes of irefs and invokes
