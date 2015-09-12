@@ -94,24 +94,36 @@
 
 ;; TODO: One should be allowed to specifiy a getter that is watched
 ;; explicitly as an optimization.  In the normal usecase this would be
-;; a keyword.
+;; a keyword.  Keywords and ks vecs have equality, fns have not if
+;; they are lambdas, so users get better performance if they use
+;; keywords.  In this sense it would be great if vectors implemented
+;; get-in.
 
-(defn- install-watch [c iref]
+(defn- install-watch [c [getter iref :as selector]]
   (let [k (gensym "minreact-watch__")]
     (transact-state! c (fn [s]
                          (-> s
-                             (update-in [:watches iref] k)
-                             (assoc iref @iref))))
+                             (update-in [:watches selector] k)
+                             (assoc selector (getter @iref)))))
     (add-watch iref k
-               (fn [_ r _ n]
-                 (set-state! c r n)))))
+               (fn [_ _ o n]
+                 (let [o (getter o)
+                       n (getter n)]
+                   (when-not (= o n)
+                     (set-state! c selector n)))))))
 
-(defn- uninstall-watch [c iref]
-  (remove-watch iref (get-in (state c) [:watches iref]))
+(defn- uninstall-watch [c [_ iref :as selector]]
+  (remove-watch iref (get-in (state c) [:watches selector]))
   (transact-state! c (fn [s]
                        (-> s
-                           (dissoc iref)
-                           (update :watches dissoc iref)))))
+                           (dissoc selector)
+                           (update :watches dissoc selector)))))
+
+(defn- normalize-selector
+  [selector]
+  (if (vector? selector)
+    selector
+    [identity selector]))
  
 (defreact watch-irefs
   "React component that watches changes of irefs and invokes
@@ -120,15 +132,18 @@
   :state kvs
   (fn getInitialState [] {})
   (fn componentDidMount []
-    (run! (partial install-watch this) irefs))
+    (->> irefs
+         (eduction (map normalize-selector))
+         (run! (partial install-watch this))))
   (fn componentWillReceiveProps [[_ & next-irefs]]
-    (let [irefs (set irefs)
-          next-irefs (set next-irefs)
+    (let [irefs (into #{} (map normalize-selector) irefs)
+          next-irefs (into #{} (map normalize-selector) irefs)
           removed (set/difference irefs next-irefs)
           added (set/difference next-irefs irefs)]
       (run! (partial install-watch this) added)
       (run! (partial uninstall-watch this) removed)))
   (fn render []
     (->> irefs
-         (map kvs)
+         (map (comp kvs
+                    normalize-selector))
          (apply render-child))))

@@ -31,19 +31,17 @@
     (html
       [:div (str "Hello, " your-name "!"
                  " I know you since " seconds-passed " seconds.")]))
-  (fn componentWillMount []
-    (m/set-state! this
-                  {:seconds-passed 0
-                   :timer
-                   (doto (Timer. 1000)
-                     (.listen Timer.TICK
-                              #(m/update-state! this :seconds-passed inc)))}))
+  (fn getInitialState []
+    {:seconds-passed 0
+     :timer (Timer. 1000)})
   (fn componentDidMount []
+    (.listen timer Timer.TICK
+             #(m/update-state! this :seconds-passed inc))
     (.start timer))
   (fn componentWillUnmount []
     (.stop timer)))
 
-(def an-atom (atom 42))
+(def an-atom (atom {:v 42}))
 
 (defreact app []
   :state {:keys [n-items]}
@@ -63,10 +61,14 @@
                              (m/set-state! this :n-items 5))}
         "click me too"]
        [:div (hello-ui "Beate")]
-       (with-irefs [v an-atom]
-         (html [:div "Atom: " v]))
+       (with-irefs [v an-atom
+                    v2 [:v an-atom]]
+         (html [:div "Atom: "
+                (pr-str v)
+                ":v in atom: "
+                (pr-str v2)]))
        [:button {:on-click (fn [_]
-                             (swap! an-atom inc))}
+                             (swap! an-atom update :v inc))}
         "Increase atom"]])))
 
 (defn main []
