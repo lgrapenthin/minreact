@@ -172,12 +172,12 @@
   "Like let, but expects irefs as init-exprs and returns a react
   component.  See wrap-watch."
   [bindings & body]
-  {:pre [(even? (count bindings))]}
-  `(watch-irefs
-    (fn ~(into []
-               (take-nth 2)
-               bindings)
-      ~@body)
-    ~@(->> bindings
-           (drop 1)
-           (take-nth 2))))
+  {:pre [(even? (count bindings))
+         (>= (count bindings) 2)]}
+  (let [[binding selector & more] bindings]
+    `(watch-iref
+      (fn [~binding]
+        ~(if (seq more)
+           `(with-irefs ~more ~@body)
+           `(do ~@body)))
+      ~selector)))

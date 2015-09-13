@@ -103,21 +103,18 @@
   (let [k (gensym "minreact-watch__")]
     (transact-state! c (fn [s]
                          (-> s
-                             (update-in [:watches selector] k)
-                             (assoc selector (getter @iref)))))
+                             (update :watch-key k)
+                             (assoc :value (getter @iref)))))
     (add-watch iref k
                (fn [_ _ o n]
                  (let [o (getter o)
                        n (getter n)]
                    (when-not (= o n)
-                     (set-state! c selector n)))))))
+                     (set-state! c :value n)))))))
 
 (defn- uninstall-watch [c [_ iref :as selector]]
-  (remove-watch iref (get-in (state c) [:watches selector]))
-  (transact-state! c (fn [s]
-                       (-> s
-                           (dissoc selector)
-                           (update :watches dissoc selector)))))
+  (remove-watch iref (:watch-key (state c)))
+  (transact-state! c #(dissoc % :watch-key :value)))
 
 (defn- normalize-selector
   [selector]
@@ -125,25 +122,29 @@
     selector
     [identity selector]))
  
-(defreact watch-irefs
+(defreact watch-iref
   "React component that watches changes of irefs and invokes
-  render-child with their values."
-  [render-child & irefs]
-  :state kvs
+  render-child with their values.
+
+  A selector may be:
+  
+  an IRef
+
+  a vector [getter iref] where getter limits the observed part of
+  iref.
+
+  Also refer to the with-irefs macro."
+  [render-child selector]
+  :state {:keys [value]}
   (fn getInitialState [] {})
   (fn componentDidMount []
-    (->> irefs
-         (eduction (map normalize-selector))
-         (run! (partial install-watch this))))
-  (fn componentWillReceiveProps [[_ & next-irefs]]
-    (let [irefs (into #{} (map normalize-selector) irefs)
-          next-irefs (into #{} (map normalize-selector) irefs)
-          removed (set/difference irefs next-irefs)
-          added (set/difference next-irefs irefs)]
-      (run! (partial install-watch this) added)
-      (run! (partial uninstall-watch this) removed)))
+    (->> (normalize-selector selector)
+         (install-watch this)))
+  (fn componentWillReceiveProps [[_ next-selector]]
+    (let [selector (normalize-selector selector)
+          next-selector (normalize-selector next-selector)]
+      (when-not (= selector next-selector)
+        (uninstall-watch this selector)
+        (install-watch this next-selector))))
   (fn render []
-    (->> irefs
-         (map (comp kvs
-                    normalize-selector))
-         (apply render-child))))
+    (render-child value)))
