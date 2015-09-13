@@ -19,7 +19,7 @@
       [:div
        [:div
         [:button {:on-click (fn [_]
-                              (m/update-state! component :count (fnil inc 0)))}
+                              (m/state! component update :count (fnil inc 0)))}
          "Count more!"]]
        [:div
         (str "Count: " count)
@@ -36,7 +36,7 @@
      :timer (Timer. 1000)})
   (fn componentDidMount []
     (.listen timer Timer.TICK
-             #(m/update-state! this :seconds-passed inc))
+             #(m/state! this update :seconds-passed inc))
     (.start timer))
   (fn componentWillUnmount []
     (.stop timer)))

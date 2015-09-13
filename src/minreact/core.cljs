@@ -33,7 +33,7 @@
   [c]
   (minreact-props (.-props c)))
 
-(defn transact-state!
+(defn state!
   "Set the components state to f applied to its current state and
   args."
   [c f & args]
@@ -42,20 +42,14 @@
                          (apply f (minreact-state react-state) args)))))
 
 ;; NOTE om korks: Grepping large om codebases shows that in 99% of the
-;; cases om/set-state! and om/update-state! are used with a single key
+;; cases om/set-state! and om/update! are used with a single key
 ;; --
-(defn update-state!
-  "Set the components state at k to f applied to its current state and
-  args. See also: transact-state!"
-  [c k f & args]
-  (apply transact-state! c update k f args))
-
 (defn set-state!
   "Set the components state to newval, at k if provided."
   ([c newval]
    (.setState c (js-obj state-key newval)))
   ([c k newval]
-   (transact-state! c assoc k newval)))
+   (state! c assoc k newval)))
 
 (def reserved-ks [:key :ref :dangerouslySetInnerHTML])
 
@@ -101,10 +95,10 @@
 
 (defn- install-watch [c [getter iref :as selector]]
   (let [k (gensym "minreact-watch__")]
-    (transact-state! c (fn [s]
-                         (-> s
-                             (update :watch-key k)
-                             (assoc :value (getter @iref)))))
+    (state! c (fn [s]
+                   (-> s
+                       (update :watch-key k)
+                       (assoc :value (getter @iref)))))
     (add-watch iref k
                (fn [_ _ o n]
                  (let [o (getter o)
@@ -114,14 +108,14 @@
 
 (defn- uninstall-watch [c [_ iref :as selector]]
   (remove-watch iref (:watch-key (state c)))
-  (transact-state! c #(dissoc % :watch-key :value)))
+  (state! c #(dissoc % :watch-key :value)))
 
 (defn- normalize-selector
   [selector]
   (if (vector? selector)
     selector
     [identity selector]))
- 
+
 (defreact watch-iref
   "React component that watches changes of irefs and invokes
   render-child with their values.
