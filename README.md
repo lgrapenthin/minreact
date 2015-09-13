@@ -36,7 +36,7 @@ This is a simple "Hello You" with a timer in minreact and sablono
              :timer
              (doto (Timer. 1000)
                (.listen Timer.TICK
-                        #(m/update! this :seconds-passed inc)))}))
+                        #(m/state! this update :seconds-passed inc)))}))
   (fn componentDidMount []
     (.start timer))
   (fn componentWillUnmount []
