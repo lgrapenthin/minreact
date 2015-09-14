@@ -59,6 +59,34 @@
                ;; deep merge on ClojureScript datastructures.
                form))))]))
 
+(defn- genspec*
+  [prop-binding opts spec]
+  (let [compiled-obj
+        `(cljs.core/js-obj
+          ~@(loop [[f s :as elems] spec
+                   result []]
+              (if f
+                (cond (symbol? f)
+                      (recur (nthnext elems 2)
+                             (conj result
+                                   (name f)
+                                   (cond (= 'mixins f)
+                                         `(let [s# ~s]
+                                            (if (vector? s#)
+                                              (apply cljs.core/array s#)))
+                                         :else
+                                         s)))
+                      (list? f)
+                      (recur (next elems)
+                             (into result (wrap-fn prop-binding opts f)))
+                      :else
+                      (throw (IllegalArgumentException.
+                              (str "Invalid spec elem: " (pr-str f)))))
+                result)))]
+    `(-> default-methods
+         (js/goog.object.clone)
+         (doto (js/goog.object.extend ~compiled-obj)))))
+
 (defmacro genspec
   "Generate a spec suitable for React.createClass.
 
@@ -102,32 +130,7 @@
   See https://facebook.github.io/react/docs/component-specs.html for
   available properties."
   [prop-binding & spec]
-  (let [[opts spec] (extract-opts spec)
-        compiled-obj
-        `(cljs.core/js-obj
-          ~@(loop [[f s :as elems] spec
-                   result []]
-              (if f
-                (cond (symbol? f)
-                      (recur (nthnext elems 2)
-                             (conj result
-                                   (name f)
-                                   (cond (= 'mixins f)
-                                         `(let [s# ~s]
-                                            (if (vector? s#)
-                                              (apply cljs.core/array s#)))
-                                         :else
-                                         s)))
-                      (list? f)
-                      (recur (next elems)
-                             (into result (wrap-fn prop-binding opts f)))
-                      :else
-                      (throw (IllegalArgumentException.
-                              (str "Invalid spec elem: " (pr-str f)))))
-                result)))]
-    `(-> default-methods
-         (js/goog.object.clone)
-         (doto (js/goog.object.extend ~compiled-obj))))) 
+  (apply genspec* prop-binding (extract-opts spec))) 
 
 (defmacro defreact
   "Define a variadic factory function according to spec. varargs
@@ -135,8 +138,13 @@
 
   See the genspec docstring for spec.
 
+  Defaults:
+  
   Within methods, the components this object is bound to `this`.  It
   can be overriden using the :this-as option in spec.
+
+  The React displayName is set to the name of the factory function by
+  default.
 
 
   React attributes:
@@ -153,13 +161,18 @@
   (let [[docstr prop-binding spec]
         (if (string? prop-binding)
           [prop-binding (first spec) (rest spec)]
-          [nil prop-binding spec])]
+          [nil prop-binding spec])
+        [opts spec] (extract-opts spec)]
     (assert (vector? prop-binding))
     `(def ~name
        ~@(if docstr
            [docstr])
        (let [c# (js/React.createClass
-                 (genspec ~prop-binding :this-as ~'this ~@spec))]
+                 ~(genspec* prop-binding
+                            (merge {:this-as 'this}
+                                    opts)
+                            (concat ['displayName (str name)]
+                                     spec)))]
          (fn
            ([]
             (js/React.createElement c# (cljs.core/js-obj)))
