@@ -12,7 +12,7 @@
                    [sablono "0.3.6"]]
     :plugins [[lein-cljsbuild "1.1.0"]
               [lein-figwheel "0.3.9"]]
-    :clean-targets [:target-path "out" "resources/public/cljs"]
+    :clean-targets ^{:protect false} [:target-path "out" "resources/public/cljs"]
     
     :figwheel {:nrepl-port 7888}
     
