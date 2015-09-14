@@ -1,12 +1,12 @@
 # minreact
 
-`[minreact "0.1.0-SNAPSHOT]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
+`[minreact "0.1.0]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
 
 # Features
 
-- Clojure interop philosophy: Wherever minreact has no functionality to add you are encouraged to use interop
+- Follows Clojures interop philosophy: Wherever minreact has no functionality to add you are encouraged to use interop
 
-- `defspec` and `defreact` macros make writing React specs and factories a joy
+- `defspec` and `defreact` macros make writing React specs and factories look and feel both idiomatic and transparent at the same time
 
 - Memorizable API to access local mutable state
 
@@ -16,7 +16,7 @@
 
 # Example
 
-This is a simple "Hello You" with a timer in minreact and sablono
+This is a simple "Hello User" with a timer in minreact and sablono
 
 ```clojure
 (ns dev.core
