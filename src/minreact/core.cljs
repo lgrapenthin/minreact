@@ -49,7 +49,7 @@
 
 ;; NOTE om korks: Grepping large om codebases shows that in 99% of the
 ;; cases om/set-state! and om/update! are used with a single key
-;; --
+
 (defn set-state!
   "Set the components state to newval, at k if provided."
   ([c newval]
@@ -92,13 +92,6 @@
      (or (not= next-props props)
          (not= next-state state)))))
 
-;; TODO: One should be allowed to specifiy a getter that is watched
-;; explicitly as an optimization.  In the normal usecase this would be
-;; a keyword.  Keywords and ks vecs have equality, fns have not if
-;; they are lambdas, so users get better performance if they use
-;; keywords.  In this sense it would be great if vectors implemented
-;; get-in.
-
 (defn- install-watch [c [getter iref :as selector]]
   (let [k (gensym "minreact-watch__")]
     (state! c (fn [s]
@@ -132,6 +125,9 @@
 
   a vector [getter iref] where getter limits the observed part of
   iref.
+
+  Note that getter should be an equal value during each invocation of
+  render.
 
   Also refer to the with-irefs macro."
   [render-child selector]
