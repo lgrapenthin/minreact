@@ -5,23 +5,29 @@
   (:require-macros [minreact.core :refer [genspec defreact]])
   (:refer-clojure :exclude [set!]))
 
-(def ^:private state-key "__minreact_state")
+(def state-key
+  "Key in component local state under which minreact stores its state
+  as a Clojure data structure"
+  "__minreact_state")
 
-(def ^:private props-key "__minreact_props")
+(def props-key
+  "Key in component props under which minreact stores its props as a
+  Clojure data structure"
+  "__minreact_props")
 
-(defn minreact-state
+(defn- minreact-state
   "Return the minreact state of pure React component state s, not-found
   if not present"
   ([s] (minreact-state s nil))
   ([s not-found]
-   (or (some-> s (obj/get state-key)) not-found)))
+   (some-> s (obj/get state-key not-found))))
 
-(defn minreact-props
+(defn- minreact-props
   "Return the minreact props of pure React component props p, not-found
   if not present"
   ([p] (minreact-props p nil))
   ([p not-found]
-   (or (some-> p (obj/get props-key)) not-found)))
+   (some-> p (obj/get props-key not-found))))
 
 (defn state
   "Return the components current state"
