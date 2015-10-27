@@ -1,6 +1,6 @@
 # minreact
 
-`[minreact "0.1.0]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
+`[minreact "0.1.1]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
 
 # Features
 
@@ -9,6 +9,8 @@
 - `defspec` and `defreact` macros make writing React specs and factories look and feel both idiomatic and transparent at the same time
 
 - Memorizable API to access local mutable state
+
+- `with-iref` component and macro to bind components to ClojureScript IRefs like atoms.
 
 - ClojureScript identity diffing (shouldComponentUpdate) by default
 
