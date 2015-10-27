@@ -142,6 +142,6 @@
         (uninstall-watch this selector)
         (install-watch this next-selector))))
   (fn componentWillUnmount []
-    (uninstall-watch this (normalize-selector selecttor)))
+    (uninstall-watch this (normalize-selector selector)))
   (fn render []
     (render-child value)))
