@@ -41,7 +41,19 @@
   (fn componentWillUnmount []
     (.stop timer)))
 
-(def an-atom (atom {:v 42}))
+(defonce some-atom (atom {}))
+
+(defreact watch-test []
+  :state {:keys [v?]}
+  (fn render []
+    (html
+      [:div
+       (if v?
+         (m/with-irefs [s some-atom]
+           (html [:div (pr-str s)])))
+       [:button {:on-click (fn [e]
+                             (m/state! this update :v? not))}
+        (pr-str v?)]])))
 
 (defreact app []
   :state {:keys [n-items]}
@@ -61,14 +73,10 @@
                              (m/set-state! this :n-items 5))}
         "click me too"]
        [:div (hello-ui "Beate")]
-       (with-irefs [v an-atom
-                    v2 [:v an-atom]]
-         (html [:div "Atom: "
-                (pr-str v)
-                ":v in atom: "
-                (pr-str v2)]))
+       (watch-test)
+       
        [:button {:on-click (fn [_]
-                             (swap! an-atom update :v inc))}
+                             (swap! some-atom update :v inc))}
         "Increase atom"]])))
 
 (defn main []

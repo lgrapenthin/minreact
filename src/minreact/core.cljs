@@ -93,10 +93,9 @@
 
 (defn- install-watch [c [getter iref :as selector]]
   (let [k (gensym "minreact-watch__")]
-    (state! c (fn [s]
-                   (-> s
-                       (update :watch-key k)
-                       (assoc :value (getter @iref)))))
+    (state! c assoc 
+            :watch-key k
+            :value (getter @iref))
     (add-watch iref k
                (fn [_ _ o n]
                  (let [o (getter o)
