@@ -141,5 +141,7 @@
       (when-not (= selector next-selector)
         (uninstall-watch this selector)
         (install-watch this next-selector))))
+  (fn componentWillUnmount []
+    (uninstall-watch this (normalize-selector selecttor)))
   (fn render []
     (render-child value)))
