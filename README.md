@@ -1,6 +1,6 @@
 # minreact
 
-`[minreact "0.1.2]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
+`[minreact "0.1.3]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
 
 # Features
 
@@ -11,6 +11,8 @@
 - Memorizable API to access local mutable state
 
 - `with-iref` component and macro to bind components to ClojureScript IRefs like atoms.
+
+- opt-in `wrapping` modifier for JS compatible wrapper components
 
 - ClojureScript identity diffing (shouldComponentUpdate) by default
 
