@@ -150,8 +150,7 @@
   React attributes:
   
   If the first arg passed to the factory is a map or JS object the
-  following keys are associated directly in the React props and will
-  not be made available in the minreact props:
+  following keys are associated directly in the React props:
 
   :key, :ref, :dangerouslySetInnerHTML
 
