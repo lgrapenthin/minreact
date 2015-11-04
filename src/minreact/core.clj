@@ -10,12 +10,23 @@
              (map vec))]
     [(into {} opts) (drop (* 2 (count opts)) spec)]))
 
+(defn- extract-modifiers
+  "Return [modifiers-set fn-form]"
+  [fn-form]
+  (let [until-name (->> fn-form
+                        (partition-all 2 1)
+                        (take-while (comp symbol? second))
+                        (map first))]
+    [(set (rest until-name))
+     (cons (first until-name)
+           (drop (count until-name) fn-form))]))
+
 (defn- wrap-fn
   [prop-binding {this-sym :this-as
                  state-binding :state
                  :or {this-sym (gensym "this")}} fn-form]
-  (let [raw? (= 'raw (second fn-form))
-        [fn-name fn-bindings & fn-body] (nthrest fn-form (if raw? 2 1))
+  (let [[{:syms [raw wrapping]} fn-form] (extract-modifiers fn-form)
+        [fn-name fn-bindings & fn-body] (rest fn-form)
         fn-params (mapv (fn [i]
                           (gensym (str fn-name "_arg_" i)))
                         (range (count fn-bindings)))]
@@ -27,7 +38,7 @@
                   (let [~prop-binding (props ~this-sym)
                         ~@(if state-binding
                             [state-binding (list `state this-sym)])
-                        ~@(if (and (not raw?)
+                        ~@(if (and (not raw)
                                    (contains? '#{componentWillReceiveProps
                                                  shouldComponentUpdate
                                                  componentWillUpdate
@@ -43,8 +54,20 @@
                                       [binding param])
                                     fn-bindings
                                     fn-params))]
-                    ~@fn-body))]
-           (if raw?
+                    ~@(if raw
+                        fn-body
+                        (case fn-name
+                          render
+                          (if wrapping
+                            `[(let [react-elem# (do ~@fn-body)]
+                                (js/goog.object.remove (.-props ~this-sym)
+                                                       minreact-props)
+                                (js/React.cloneElement
+                                 react-elem#
+                                 (.-props ~this-sym)))]
+                            fn-body)
+                          fn-body))))]
+           (if raw
              form
              (case fn-name
                getInitialState
@@ -123,7 +146,13 @@
   props and state.  The return value of getInitialState is embedded
   into a js object for React state.
 
-  Augmentation can be disabled with the modifier \"raw\".
+  Modifier symbols:
+
+  raw - Disables augmentation on the method.
+
+  wrapping - Augments render so that the returned ReactElement
+  inherits this components JavaScript (not Minreact) props via
+  React.cloneElement.
 
   mixins - If a vector is passed it is cast to a js-array.
 
@@ -133,7 +162,7 @@
   (apply genspec* prop-binding (extract-opts spec))) 
 
 (defmacro defreact
-  "Define a variadic factory function according to spec. varargs
+  "Define a variadic factory function according to spec.  Its varargs
   become the components minreact props.
 
   See the genspec docstring for spec.

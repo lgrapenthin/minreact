@@ -55,6 +55,21 @@
                              (m/state! this update :v? not))}
         (pr-str v?)]])))
 
+(defreact child-mutator [child]
+  (fn render []
+    (js/React.cloneElement child #js{:mutation "correct"})))
+
+(defreact wrapper-test [child]
+  (fn wrapping render []
+    child))
+
+(defreact child-to-mutate []
+  (fn render []
+    (html
+      [:div (str "JS style child mutation: "
+                 (or (.. this -props -mutation)
+                     "incorrect"))])))
+
 (defreact app []
   :state {:keys [n-items]}
   (fn getInitialState []
@@ -77,7 +92,10 @@
        
        [:button {:on-click (fn [_]
                              (swap! some-atom update :v inc))}
-        "Increase atom"]])))
+        "Increase atom"]
+       [:div (child-mutator
+              (wrapper-test
+               (child-to-mutate)))]])))
 
 (defn main []
   (js/React.render (app)
