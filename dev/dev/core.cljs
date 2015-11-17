@@ -63,12 +63,16 @@
   (fn wrapping render []
     child))
 
-(defreact child-to-mutate []
+(defreact child-to-mutate [must-be-three]
   (fn render []
     (html
-      [:div (str "JS style child mutation: "
-                 (or (.. this -props -mutation)
-                     "incorrect"))])))
+      [:div
+       [:div (str "JS style child mutation: "
+                  (or (.. this -props -mutation)
+                      "incorrect"))]
+       [:div (str "Minreact props: " (if (= must-be-three 3)
+                                       "correct"
+                                       "incorrect"))]])))
 
 (defreact app []
   :state {:keys [n-items]}
@@ -95,7 +99,7 @@
         "Increase atom"]
        [:div (child-mutator
               (wrapper-test
-               (child-to-mutate)))]])))
+               (child-to-mutate 3)))]])))
 
 (defn main []
   (js/React.render (app)

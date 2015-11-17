@@ -61,7 +61,7 @@
                           (if wrapping
                             `[(let [react-elem# (do ~@fn-body)]
                                 (js/goog.object.remove (.-props ~this-sym)
-                                                       minreact-props)
+                                                       props-key)
                                 (js/React.cloneElement
                                  react-elem#
                                  (.-props ~this-sym)))]
