@@ -59,12 +59,13 @@
                         (case fn-name
                           render
                           (if wrapping
-                            `[(let [react-elem# (do ~@fn-body)]
-                                (js/goog.object.remove (.-props ~this-sym)
-                                                       props-key)
+                            `[(if-let [elem# (do ~@fn-body)]
                                 (js/React.cloneElement
-                                 react-elem#
-                                 (.-props ~this-sym)))]
+                                 elem#
+                                 (js/goog.object.filter
+                                  (.-props ~this-sym)
+                                  (fn [_# k# _#]
+                                    (not= props-key k#)))))]
                             fn-body)
                           fn-body))))]
            (if raw
@@ -150,9 +151,9 @@
 
   raw - Disables augmentation on the method.
 
-  wrapping - Augments render so that the returned ReactElement
-  inherits this components JavaScript (not Minreact) props via
-  React.cloneElement.
+  wrapping - Augments render so that the optionally returned
+  ReactElement inherits this components JavaScript (not Minreact)
+  props via React.cloneElement.
 
   mixins - If a vector is passed it is cast to a js-array.
 
