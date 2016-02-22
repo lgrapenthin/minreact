@@ -47,6 +47,15 @@
                  (js-obj state-key
                          (apply f (minreact-state react-state) args)))))
 
+(defn state!!
+  "Set the components state to f applied to its current state, render
+  it and then invoke on-rendered."
+  [c f on-rendered]
+  (.setState c (fn [react-state _]
+                 (js-obj state-key
+                         (f (minreact-state react-state))))
+             on-rendered))
+
 ;; NOTE om korks: Grepping large om codebases shows that in 99% of the
 ;; cases om/set-state! and om/update! are used with a single key
 

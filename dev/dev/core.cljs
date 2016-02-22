@@ -74,6 +74,25 @@
                                        "correct"
                                        "incorrect"))]])))
 
+(defreact state!!-test []
+  :state {:keys [the-id]}
+  (fn render []
+    (html
+     [:div
+      [:button
+       {:on-click
+        (fn [_]
+          (let [id-str (str "id-" (rand-int 10))]
+            (m/state!! this
+                       #(assoc % :the-id id-str)
+                       #(js/console.log
+                         "This should be a valid element wit id"
+                         id-str
+                         (js/document.getElementById id-str)))))}
+       "test state!!"]
+      (if the-id
+        [:div {:id the-id}])])))
+
 (defreact app []
   :state {:keys [n-items]}
   (fn getInitialState []
@@ -99,7 +118,8 @@
         "Increase atom"]
        [:div (child-mutator
               (wrapper-test
-               (child-to-mutate 3)))]])))
+               (child-to-mutate 3)))]
+       (state!!-test)])))
 
 (defn main []
   (js/React.render (app)
