@@ -1,6 +1,6 @@
 # minreact
 
-`[minreact "0.1.5]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
+`[minreact "0.1.6]` is a ClojureScript *adapter* for Facebooks React.  It is designed with the minimalistic goal of providing just enough ClojureScript to make React interop non-tedious. 
 
 # Features
 
