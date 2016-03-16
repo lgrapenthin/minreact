@@ -106,8 +106,12 @@
         [:div
          [:div (pr-str (m/bind bind-test-ref))]
          [:div (pr-str (m/bind bind-test-ref get :v))]
-         [:div (pr-str "Divisible by 10: "
-                       (m/bind bind-test-ref #(zero? (rem (:v %) 10))))]])
+         [:div "Divisible by 10: "
+          (pr-str 
+           (m/bind bind-test-ref #(zero? (rem (:v %) 10))))]
+         [:div "Some Atom:"
+          (pr-str 
+           (m/bind some-atom))]])
       [:button {:on-click (fn [_]
                             (swap! bind-test-ref update :v inc))}
        "inc"]
