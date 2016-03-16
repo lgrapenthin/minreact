@@ -163,11 +163,14 @@
 (defn bind
   ([iref]
    (bind iref identity))
-  ([iref selector]
+  ([iref f & args]
    (if-let [c *current-component*]
      (if-let [irefs (obj/get c "__minreact_bind")]
-       (do (swap! irefs update iref (fnil conj #{}) selector)
-           (selector @iref))
+       (let [f (if args
+                 #(apply f % args)
+                 f)]
+         (swap! irefs update iref (fnil conj #{}) f)
+         (f @iref))
        (throw "Component must use minreact.core/irefs mixin"))
      (throw "Can't use bind outside of rendering cycle"))))
 

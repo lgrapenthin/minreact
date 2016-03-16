@@ -93,7 +93,7 @@
       (if the-id
         [:div {:id the-id}])])))
 
-(def bind-test-ref (atom 0))
+(def bind-test-ref (atom {:v 0}))
 
 (defreact bind-test []
   :state invis?
@@ -104,11 +104,12 @@
      [:div
       (if-not invis?
         [:div
-         (pr-str (m/bind bind-test-ref))
-         (pr-str "Divisible by 10: "
-                 (m/bind bind-test-ref #(zero? (rem % 10))))])
+         [:div (pr-str (m/bind bind-test-ref))]
+         [:div (pr-str (m/bind bind-test-ref get :v))]
+         [:div (pr-str "Divisible by 10: "
+                       (m/bind bind-test-ref #(zero? (rem (:v %) 10))))]])
       [:button {:on-click (fn [_]
-                            (swap! bind-test-ref inc))}
+                            (swap! bind-test-ref update :v inc))}
        "inc"]
       [:button {:on-click (fn [_]
                             (m/state! this not))}
