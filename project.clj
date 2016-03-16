@@ -1,27 +1,34 @@
-(defproject minreact "0.1.6"
+(defproject minreact "0.1.7-SNAPSHOT"
   :description "ClojureScript React adapter"
   :url "http://github.com/lgrapenthin/minreact"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [cljsjs/react "0.13.3-1"]]
+  :dependencies [[org.clojure/clojure "1.7.0"]]
   :profiles
   {:dev
-   {:dependencies [[org.clojure/clojurescript "1.7.122"]
-                   
-                   [sablono "0.3.6"]]
-    :plugins [[lein-cljsbuild "1.1.0"]
-              [lein-figwheel "0.3.9"]]
-    :clean-targets ^{:protect false} [:target-path "out" "resources/public/cljs"]
-    
-    :figwheel {:nrepl-port 7888}
-    
-    :cljsbuild
-    {:builds
-     [{:id "dev"
-       :source-paths ["src" "dev"]
-       :figwheel true
-       :compiler {:main dev.core
-                  :asset-path "cljs/out"
-                  :output-to  "resources/public/cljs/main.js"
-                  :output-dir "resources/public/cljs/out"}}]}}})
+   [:repl
+    {:dependencies [[org.clojure/clojurescript "1.7.228"]
+                    [cljsjs/react "0.14.3-0"]
+                    [cljsjs/react-dom "0.14.3-1"]
+                          
+                    [sablono "0.6.2"]
+
+                    [com.cemerick/piggieback "0.2.1"]]
+     :plugins [[lein-cljsbuild "1.1.2"]
+               [lein-figwheel "0.5.0-6"]]
+     :clean-targets ^{:protect false} [:target-path "out" "resources/public/cljs"]
+           
+     :figwheel {:nrepl-port 7888
+                :nrepl-middleware
+                ["cemerick.piggieback/wrap-cljs-repl"
+                 "cider.nrepl/cider-middleware"]}
+           
+     :cljsbuild
+     {:builds
+      [{:id "dev"
+        :source-paths ["src" "dev"]
+        :figwheel true
+        :compiler {:main dev.core
+                   :asset-path "cljs/out"
+                   :output-to  "resources/public/cljs/main.js"
+                   :output-dir "resources/public/cljs/out"}}]}}]})

@@ -58,15 +58,17 @@
                         fn-body
                         (case fn-name
                           render
-                          (if wrapping
-                            `[(if-let [elem# (do ~@fn-body)]
-                                (js/React.cloneElement
-                                 elem#
-                                 (js/goog.object.filter
-                                  (.-props ~this-sym)
-                                  (fn [_# k# _#]
-                                    (not= props-key k#)))))]
-                            fn-body)
+                          `[(binding [*current-component* ~this-sym]
+                              ~@(if wrapping
+                                  [`(if-let [elem# (do ~@fn-body)]
+                                      (js/React.cloneElement
+                                       elem#
+                                       (js/goog.object.filter
+                                        (.-props ~this-sym)
+                                        (fn [_# k# _#]
+                                          (not= props-key k#)))))]
+                                  fn-body))]
+                          
                           fn-body))))]
            (if raw
              form
@@ -107,9 +109,11 @@
                       (throw (IllegalArgumentException.
                               (str "Invalid spec elem: " (pr-str f)))))
                 result)))]
-    `(-> default-methods
-         (js/goog.object.clone)
-         (doto (js/goog.object.extend ~compiled-obj)))))
+    (if (:pure opts)
+      compiled-obj
+      `(-> default-methods
+           (js/goog.object.clone)
+           (doto (js/goog.object.extend ~compiled-obj))))))
 
 (defmacro genspec
   "Generate a spec suitable for React.createClass.

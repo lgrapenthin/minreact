@@ -15,6 +15,10 @@
   Clojure data structure"
   "__minreact_props")
 
+(def ^:dynamic *current-component*
+  "If in a render method, the currently rendered component"
+  nil)
+
 (defn- minreact-state
   "Return the minreact state of pure React component state s, not-found
   if not present"
@@ -91,6 +95,7 @@
   "Minreact default methods"
   (genspec
    props
+   :pure true
    :state state
    (fn getDefaultProps []
      (js-obj props-key nil))
@@ -121,6 +126,40 @@
   (if (vector? selector)
     selector
     [identity selector]))
+
+(def irefs
+  "Mixin that is required in a component that uses m/bind"
+  (genspec _
+   :this-as this
+   :pure true
+   (fn componentWillMount []
+     (obj/set this "__minreact_bind" (atom #{})))
+   (fn componentWillReceiveProps []
+     (doseq [r @(obj/get this "__minreact_bind")]
+       (remove-watch r this))
+     (reset! (obj/get this "__minreact_bind") #{}))
+   (fn componentDidMount []
+     (doseq [r @(obj/get this "__minreact_bind")]
+       (add-watch r this
+                  (fn [_ _ _ _]
+                    (.forceUpdate this)))))
+   (fn componentDidUpdate []
+     (doseq [r @(obj/get this "__minreact_bind")]
+       (add-watch r this
+                  (fn [_ _ _ _]
+                    (.forceUpdate this)))))
+   (fn componentWillUnmount []
+     (doseq [r @(obj/get this "__minreact_bind")]
+       (remove-watch r this)))))
+
+(defn bind
+  [iref]
+  (if-let [c *current-component*]
+    (if-let [irefs (obj/get c "__minreact_bind")]
+      (do (swap! irefs conj iref)
+          @iref)
+      (throw "Component must use minreact.core/irefs mixin"))
+    (throw "Can't use bind outside of rendering cycle")))
 
 (defreact watch-iref
   "React component that watches changes of irefs and invokes

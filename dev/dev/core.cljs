@@ -93,6 +93,23 @@
       (if the-id
         [:div {:id the-id}])])))
 
+(def bind-test-ref (atom 42))
+
+(defreact bind-test []
+  :state vis?
+  mixins [m/irefs]
+  (fn render []
+    (html
+     [:div
+      (if vis?
+        (pr-str (m/bind bind-test-ref)))
+      [:button {:on-click (fn [_]
+                            (swap! bind-test-ref inc))}
+       "inc"]
+      [:button {:on-click (fn [_]
+                            (m/state! this not))}
+       "toggle vis"]])))
+
 (defreact app []
   :state {:keys [n-items]}
   (fn getInitialState []
@@ -119,7 +136,8 @@
        [:div (child-mutator
               (wrapper-test
                (child-to-mutate 3)))]
-       (state!!-test)])))
+       (state!!-test)
+       (bind-test)])))
 
 (defn main []
   (js/React.render (app)
