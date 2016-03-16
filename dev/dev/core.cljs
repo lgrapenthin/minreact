@@ -93,16 +93,20 @@
       (if the-id
         [:div {:id the-id}])])))
 
-(def bind-test-ref (atom 42))
+(def bind-test-ref (atom 0))
 
 (defreact bind-test []
-  :state vis?
+  :state invis?
   mixins [m/irefs]
   (fn render []
+    (js/console.log "rendering bind-test")
     (html
      [:div
-      (if vis?
-        (pr-str (m/bind bind-test-ref)))
+      (if-not invis?
+        [:div
+         (pr-str (m/bind bind-test-ref))
+         (pr-str "Divisible by 10: "
+                 (m/bind bind-test-ref #(zero? (rem % 10))))])
       [:button {:on-click (fn [_]
                             (swap! bind-test-ref inc))}
        "inc"]

@@ -133,33 +133,43 @@
    :this-as this
    :pure true
    (fn componentWillMount []
-     (obj/set this "__minreact_bind" (atom #{})))
-   (fn componentWillReceiveProps []
-     (doseq [r @(obj/get this "__minreact_bind")]
+     (obj/set this "__minreact_bind" (atom {})))
+   (fn componentWillUpdate [_ _]
+     (doseq [[r _] @(obj/get this "__minreact_bind")]
        (remove-watch r this))
-     (reset! (obj/get this "__minreact_bind") #{}))
+     (reset! (obj/get this "__minreact_bind") {}))
    (fn componentDidMount []
-     (doseq [r @(obj/get this "__minreact_bind")]
+     (doseq [[r sels] @(obj/get this "__minreact_bind")]
        (add-watch r this
-                  (fn [_ _ _ _]
-                    (.forceUpdate this)))))
+                  (fn [_ _ o n]
+                    (loop [[sel & sels] (seq sels)]
+                      (if (and sel
+                               (= (sel o) (sel n)))
+                        (recur (next sels))
+                        (.forceUpdate this)))))))
    (fn componentDidUpdate []
-     (doseq [r @(obj/get this "__minreact_bind")]
+     (doseq [[r sels] @(obj/get this "__minreact_bind")]
        (add-watch r this
-                  (fn [_ _ _ _]
-                    (.forceUpdate this)))))
+                  (fn [_ _ o n]
+                    (loop [[sel & sels] (seq sels)]
+                      (if (and sel
+                               (= (sel o) (sel n)))
+                        (recur (next sels))
+                        (.forceUpdate this)))))))
    (fn componentWillUnmount []
-     (doseq [r @(obj/get this "__minreact_bind")]
+     (doseq [[r _] @(obj/get this "__minreact_bind")]
        (remove-watch r this)))))
 
 (defn bind
-  [iref]
-  (if-let [c *current-component*]
-    (if-let [irefs (obj/get c "__minreact_bind")]
-      (do (swap! irefs conj iref)
-          @iref)
-      (throw "Component must use minreact.core/irefs mixin"))
-    (throw "Can't use bind outside of rendering cycle")))
+  ([iref]
+   (bind iref identity))
+  ([iref selector]
+   (if-let [c *current-component*]
+     (if-let [irefs (obj/get c "__minreact_bind")]
+       (do (swap! irefs update iref (fnil conj #{}) selector)
+           (selector @iref))
+       (throw "Component must use minreact.core/irefs mixin"))
+     (throw "Can't use bind outside of rendering cycle"))))
 
 (defreact watch-iref
   "React component that watches changes of irefs and invokes
