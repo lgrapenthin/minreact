@@ -109,7 +109,7 @@
                       (throw (IllegalArgumentException.
                               (str "Invalid spec elem: " (pr-str f)))))
                 result)))]
-    (if (:pure opts)
+    (if (:raw opts)
       compiled-obj
       `(-> default-methods
            (js/goog.object.clone)

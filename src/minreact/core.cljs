@@ -95,7 +95,7 @@
   "Minreact default methods"
   (genspec
    props
-   :pure true
+   :raw true
    :state state
    (fn getDefaultProps []
      (js-obj props-key nil))
@@ -128,39 +128,39 @@
     [identity selector]))
 
 (def irefs
-  "Mixin that is required in a component that uses m/bind"
-  (genspec _
-   :this-as this
-   :pure true
-   (fn componentWillMount []
-     (obj/set this "__minreact_bind" (atom {})))
-   (fn componentWillUpdate [_ _]
-     (doseq [[r _] @(obj/get this "__minreact_bind")]
-       (remove-watch r this))
-     (reset! (obj/get this "__minreact_bind") {}))
-   (fn componentDidMount []
-     (doseq [[r sels] @(obj/get this "__minreact_bind")]
-       (add-watch r this
-                  (fn [_ _ o n]
-                    (loop [[sel & sels] (seq sels)]
-                      (if (and sel
-                               (= (sel o) (sel n)))
-                        (recur (next sels))
-                        (.forceUpdate this)))))))
-   (fn componentDidUpdate []
-     (doseq [[r sels] @(obj/get this "__minreact_bind")]
-       (add-watch r this
-                  (fn [_ _ o n]
-                    (loop [[sel & sels] (seq sels)]
-                      (if (and sel
-                               (= (sel o) (sel n)))
-                        (recur (next sels))
-                        (.forceUpdate this)))))))
-   (fn componentWillUnmount []
-     (doseq [[r _] @(obj/get this "__minreact_bind")]
-       (remove-watch r this)))))
+  "Mixin that is required in a component that uses minreact.core/bind"
+  (letfn [(remove-all! [this]
+            (doseq [[r _] @(obj/get this "__minreact_bind")]
+              (remove-watch r this)))
+          (install-all! [this]
+            (doseq [[r sels] @(obj/get this "__minreact_bind")]
+              (add-watch r this
+                         (fn [_ _ o n]
+                           (loop [[sel & sels] (seq sels)]
+                             (if (and sel
+                                      (= (sel o) (sel n)))
+                               (recur (next sels))
+                               (.forceUpdate this)))))))]
+    (genspec
+     _
+     :this-as this
+     :raw true
+     (fn componentWillMount []
+       (obj/set this "__minreact_bind" (atom {})))
+     (fn componentWillUpdate [_ _]
+       (remove-all! this)
+       (reset! (obj/get this "__minreact_bind") {}))
+     (fn componentDidMount []
+       (install-all! this))
+     (fn componentDidUpdate []
+       (install-all! this))
+     (fn componentWillUnmount []
+       (remove-all! this)))))
 
 (defn bind
+  "The component will re-render when the irefs value applied to
+  f (default: identity) and args has changed.  Returns current value
+  of iref.  Requires minreact.core/irefs mixin."
   ([iref]
    (bind iref identity))
   ([iref f & args]
