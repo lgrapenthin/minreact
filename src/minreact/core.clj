@@ -131,6 +131,10 @@
   :this-as - A symbol bound to the React component in all direct
   function definitions
 
+  :raw - A flag whether to exclude minreacts default spec.  The
+  default spec is implemented in minreact.core/default-methods and can
+  be overridden in a spec.
+
   spec - Either a symbol value pair, or a single literal function
   definition:
 
