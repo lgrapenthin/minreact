@@ -8,21 +8,21 @@
   {:dev
    [:repl
     {:dependencies [[org.clojure/clojurescript "1.7.228"]
-                    [cljsjs/react "0.14.3-0"]
-                    [cljsjs/react-dom "0.14.3-1"]
-                          
-                    [sablono "0.6.2"]
+                    [cljsjs/react "15.1.0-0"]
+                    [cljsjs/react-dom "15.1.0-0"]
+
+                    [sablono "0.7.1"]
 
                     [com.cemerick/piggieback "0.2.1"]]
      :plugins [[lein-cljsbuild "1.1.2"]
                [lein-figwheel "0.5.0-6"]]
      :clean-targets ^{:protect false} [:target-path "out" "resources/public/cljs"]
-           
+
      :figwheel {:nrepl-port 7888
                 :nrepl-middleware
                 ["cemerick.piggieback/wrap-cljs-repl"
                  "cider.nrepl/cider-middleware"]}
-           
+
      :cljsbuild
      {:builds
       [{:id "dev"

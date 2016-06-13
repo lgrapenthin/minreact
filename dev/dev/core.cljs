@@ -107,10 +107,10 @@
          [:div (pr-str (m/bind bind-test-ref))]
          [:div (pr-str (m/bind bind-test-ref get :v))]
          [:div "Divisible by 10: "
-          (pr-str 
+          (pr-str
            (m/bind bind-test-ref #(zero? (rem (:v %) 10))))]
          [:div "Some Atom:"
-          (pr-str 
+          (pr-str
            (m/bind some-atom))]])
       [:button {:on-click (fn [_]
                             (swap! bind-test-ref update :v inc))}
@@ -138,7 +138,7 @@
         "click me too"]
        [:div (hello-ui "Beate")]
        (watch-test)
-       
+
        [:button {:on-click (fn [_]
                              (swap! some-atom update :v inc))}
         "Increase atom"]
@@ -149,7 +149,7 @@
        (bind-test)])))
 
 (defn main []
-  (js/React.render (app)
-                   (js/document.getElementById "app")))
+  (js/ReactDOM.render (app)
+                      (js/document.getElementById "app")))
 
 (main)
