@@ -80,7 +80,7 @@
                (aset obj (name k) v)))
            obj)
          props]
-        
+
         (object? props)
         (let [obj (js-obj)]
           (doseq [k (map name reserved-ks)]
@@ -107,7 +107,7 @@
 
 (defn- install-watch [c [getter iref :as selector]]
   (let [k (gensym "minreact-watch__")]
-    (state! c assoc 
+    (state! c assoc
             :watch-key k
             :value (getter @iref))
     (add-watch iref k
@@ -128,7 +128,8 @@
     [identity selector]))
 
 (def irefs
-  "Mixin that is required in a component that uses minreact.core/bind"
+  "EXPERIMENTAL.  Mixin that is required in a component that uses
+  minreact.core/bind"
   (letfn [(remove-all! [this]
             (doseq [[r _] @(obj/get this "__minreact_bind")]
               (remove-watch r this)))
@@ -158,9 +159,9 @@
        (remove-all! this)))))
 
 (defn bind
-  "The component will re-render when the irefs value applied to
-  f (default: identity) and args has changed.  Returns current value
-  of iref.  Requires minreact.core/irefs mixin."
+  "EXPERIMENTAL.  The component will re-render when the irefs value
+  applied to f (default: identity) and args has changed.  Returns
+  current value of iref.  Requires minreact.core/irefs mixin."
   ([iref]
    (bind iref identity))
   ([iref f & args]
@@ -179,7 +180,7 @@
   render-child with their values.
 
   A selector may be:
-  
+
   an IRef
 
   a vector [getter iref] where getter limits the observed part of
