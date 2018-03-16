@@ -87,7 +87,11 @@
 
 (defn- genspec*
   [prop-binding opts spec]
-  (let [compiled-obj
+  (let [spec (if (and (not-any? #{'mixins} spec)
+                      (not (:raw opts)))
+               (concat spec '[mixins [minreact.core/irefs]])
+               spec)
+        compiled-obj
         `(cljs.core/js-obj
           ~@(loop [[f s :as elems] spec
                    result []]

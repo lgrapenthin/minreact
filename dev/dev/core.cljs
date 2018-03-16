@@ -97,7 +97,7 @@
 
 (defreact bind-test []
   :state invis?
-  mixins [m/irefs]
+  ;mixins [m/irefs]
   (fn render []
     (js/console.log "rendering bind-test")
     (html
