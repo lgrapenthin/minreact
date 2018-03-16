@@ -1,4 +1,4 @@
-(defproject minreact "0.1.7-alpha1"
+(defproject minreact "0.1.7-alpha2"
   :description "ClojureScript React adapter"
   :url "http://github.com/lgrapenthin/minreact"
   :license {:name "Eclipse Public License"
@@ -12,6 +12,7 @@
                     [cljsjs/react-dom "15.1.0-0"]
 
                     [sablono "0.7.1"]
+                    [org.clojure/tools.nrepl "0.2.12"]
 
                     [com.cemerick/piggieback "0.2.1"]]
      :plugins [[lein-cljsbuild "1.1.2"]
