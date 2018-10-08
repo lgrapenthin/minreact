@@ -79,13 +79,14 @@
              (when-let [v (get props k)]
                (aset obj (name k) v)))
            obj)
-         props]
+         (apply dissoc props reserved-ks)]
 
         (object? props)
         (let [obj (js-obj)]
           (doseq [k (map name reserved-ks)]
             (when-let [v (obj/get props k)]
-              (aset obj k v)))
+              (aset obj k v)
+              (obj/remove props k)))
           [obj props])
 
         :else

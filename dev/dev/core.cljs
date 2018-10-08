@@ -119,6 +119,10 @@
                             (m/state! this not))}
        "toggle vis"]])))
 
+(defreact react-key-test [{:keys [key]}]
+  (fn render []
+    (html [:div "Key test: " (if key "fail" "pass")])))
+
 (defreact app []
   :state {:keys [n-items]}
   (fn getInitialState []
@@ -146,7 +150,8 @@
               (wrapper-test
                (child-to-mutate 3)))]
        (state!!-test)
-       (bind-test)])))
+       (bind-test)
+       (react-key-test {:key "my-key"})])))
 
 (defn main []
   (js/ReactDOM.render (app)
