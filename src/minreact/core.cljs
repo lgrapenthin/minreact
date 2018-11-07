@@ -19,14 +19,14 @@
   "If in a render method, the currently rendered component"
   nil)
 
-(defn- minreact-state
+(defn minreact-state
   "Return the minreact state of pure React component state s, not-found
   if not present"
   ([s] (minreact-state s nil))
   ([s not-found]
    (some-> s (obj/get state-key not-found))))
 
-(defn- minreact-props
+(defn minreact-props
   "Return the minreact props of pure React component props p, not-found
   if not present"
   ([p] (minreact-props p nil))
@@ -72,7 +72,7 @@
 
 (def reserved-ks [:key :ref :dangerouslySetInnerHTML])
 
-(defn- extract-reserved [props]
+(defn extract-reserved [props]
   (cond (map? props)
         [(let [obj (js-obj)]
            (doseq [k reserved-ks]
@@ -92,7 +92,7 @@
         :else
         [(js-obj) props]))
 
-(def ^:private default-methods
+(def default-methods
   "Minreact default methods"
   (genspec
    props

@@ -1,4 +1,4 @@
-(defproject minreact "0.1.7-alpha4"
+(defproject minreact "0.1.7-alpha5"
   :description "ClojureScript React adapter"
   :url "http://github.com/lgrapenthin/minreact"
   :license {:name "Eclipse Public License"
