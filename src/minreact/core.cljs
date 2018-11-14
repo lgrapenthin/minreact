@@ -194,7 +194,7 @@
   [render-child selector]
   :state {:keys [value]}
   (fn getInitialState [] {})
-  (fn componentDidMount []
+  (fn componentWillMount []
     (->> (normalize-selector selector)
          (install-watch this)))
   (fn componentWillReceiveProps [[_ next-selector]]

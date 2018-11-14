@@ -1,8 +1,9 @@
-(defproject minreact "0.1.7-alpha5"
+(defproject minreact "0.1.7-alpha6"
   :description "ClojureScript React adapter"
   :url "http://github.com/lgrapenthin/minreact"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :deploy-repositories {"clojars" {:sign-releases false}}
   :dependencies [[org.clojure/clojure "1.7.0"]]
   :profiles
   {:dev
